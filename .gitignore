@@ -8,3 +8,6 @@ src/solutions
 particle_filter.cpp
 install-ubuntu.sh
 install-mac.sh
+.cproject
+.project
+.settings/
