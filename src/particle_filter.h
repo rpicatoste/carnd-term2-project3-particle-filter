@@ -107,6 +107,8 @@ public:
 	const bool initialized() const {
 		return is_initialized;
 	}
+
+	LandmarkObs convertObservationToMapCoordinates( Particle particle, LandmarkObs car_observation );
 };
 
 
