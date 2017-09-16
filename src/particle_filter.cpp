@@ -107,12 +107,12 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predictions, std::
 	//	predictions <- landmarks_within_sensor_range
 	//	observations <- observations_in_map_coordinates
 
-	// TODO
-	for (auto & ob: observations) {
-		auto closest = min_element(begin(predictions), end(predictions),
-								   [& ob] (const LandmarkObs &a, const LandmarkObs &b)
-								   { return dist(a.x, a.y, ob.x, ob.y) < dist(b.x, b.y, ob.x, ob.y); } );
-		ob.id = distance(begin(predictions), closest);
+	for (int ii = 0; ii < observations.size() ; ++ii) {
+		LandmarkObs &observation = observations[ii];
+		auto closest = min_element( begin(predictions), end(predictions),
+										   [& observation] (const LandmarkObs &a, const LandmarkObs &b)
+										   { return dist(a.x, a.y, observation.x, observation.y) < dist(b.x, b.y, observation.x, observation.y); } );
+		observation.id = distance(begin(predictions), closest);
 	}
 
 	DebugPrint("dataAssociation: Leaving.");
@@ -145,7 +145,7 @@ void ParticleFilter::updateWeights(	double sensor_range, double std_landmark[],
 									std::vector<LandmarkObs> observations, Map map_landmarks)
 {
 	DebugPrint("updateWeights: Entering.");
-	// TODO: Update the weights of each particle using a mult-variate Gaussian distribution. You can read
+	// Update the weights of each particle using a mult-variate Gaussian distribution. You can read
 	//   more about this distribution here: https://en.wikipedia.org/wiki/Multivariate_normal_distribution
 	// NOTE: The observations are given in the VEHICLE'S coordinate system. Your particles are located
 	//   according to the MAP'S coordinate system. You will need to transform between the two systems.
@@ -204,14 +204,13 @@ void ParticleFilter::updateWeights(	double sensor_range, double std_landmark[],
 			// Calculate final weight using Multivariate-Gaussian probability
 			DebugPrint("updateWeights: Calculate final weight.");
 			double current_weight = 1;
-			for (auto & observation : observations_in_map_coordinates) {
-				double xo = observation.x;
-				double yo = observation.y;
-				double xr = landmarks_within_sensor_range[observation.id].x;
-				double yr = landmarks_within_sensor_range[observation.id].y;
-				//MultiVariateGaussianProbability(double x, double y, double mu_x, double mu_y, double std_x, double std_y)
+			for ( int iom = 0 ; iom < observations_in_map_coordinates.size() ; ++iom ) {
+				double xo = observations_in_map_coordinates[iom].x;
+				double yo = observations_in_map_coordinates[iom].y;
+				int id = observations_in_map_coordinates[iom].id;
+				double xr = landmarks_within_sensor_range[id].x;
+				double yr = landmarks_within_sensor_range[id].y;
 
-				DebugPrint("updateWeights: MultiVariateGaussianProbability.");
 				current_weight *= MultiVariateGaussianProbability(xo, yo, xr, yr, std_landmark[0], std_landmark[1]);
 			}
 
@@ -229,7 +228,7 @@ void ParticleFilter::updateWeights(	double sensor_range, double std_landmark[],
 void ParticleFilter::resample()
 {
 	DebugPrint("resample: Entering.");
-	// TODO: Resample particles with replacement with probability proportional to their weight.
+	// Resample particles with replacement with probability proportional to their weight.
 	// NOTE: You may find std::discrete_distribution helpful here.
 	//   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
 
