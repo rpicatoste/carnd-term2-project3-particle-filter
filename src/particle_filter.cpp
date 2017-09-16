@@ -42,7 +42,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	// Creates normal (Gaussian) distributions for x, y, theta.
 	normal_distribution<double> dist_x(x, std[0]);
 	normal_distribution<double> dist_y(y, std[1]);
-	normal_distribution<double> dist_theta(theta, std[0]);
+	normal_distribution<double> dist_theta(theta, std[2]);
 
 	for(int ii = 0; ii < this->num_particles ; ++ii ){
 
@@ -162,14 +162,11 @@ void ParticleFilter::updateWeights(	double sensor_range, double std_landmark[],
 
 	// For each particle (the "candidate" in each iteration)
 	for( int ii = 0; ii < this->num_particles; ++ii ){
-//		std::cout  << "ii " << ii << std::endl;
 		DebugPrint("updateWeights: Start particle cycle.");
 
 		// Clear vector if used in previous cycles.
 	    if(landmarks_within_sensor_range.size() > 0){
-//	    	std::cout << "Clear vector of size " << landmarks_within_sensor_range.size() << std::endl;
 	    	landmarks_within_sensor_range.clear();
-//	    	std::cout << "Cleared vector, now of size " << landmarks_within_sensor_range.size() << std::endl;
 	    }
 
 		double xp = particles[ii].x;
@@ -193,13 +190,9 @@ void ParticleFilter::updateWeights(	double sensor_range, double std_landmark[],
 				obs.x = xm;
 				obs.y = ym;
 				obs.id = map_landmarks.landmark_list[ilm].id_i;
-				DebugPrint("updateWeights: New landmarks_within_sensor_range.");
-//				std::cout  << " ilm " << ilm << " x " << obs.x << " y " << obs.y << " id " << obs.id << " size_vector " << landmarks_within_sensor_range.size() << std::endl;
 				landmarks_within_sensor_range.push_back(obs);
-//				std::cout  << "updateWeights: New landmarks_within_sensor_range. Done" << std::endl;
 			}
 	    }
-
 
 		DebugPrint("updateWeights: If there are landmarks in range.");
 	    if (landmarks_within_sensor_range.size() != 0) {
@@ -207,8 +200,8 @@ void ParticleFilter::updateWeights(	double sensor_range, double std_landmark[],
 			this->dataAssociation( landmarks_within_sensor_range, observations_in_map_coordinates);
 
 
-			DebugPrint("updateWeights: Calculate final weight.");
 			// Calculate final weight using Multivariate-Gaussian probability
+			DebugPrint("updateWeights: Calculate final weight.");
 			double current_weight = 1;
 			for (auto & observation : observations_in_map_coordinates) {
 				double xo = observation.x;
@@ -221,21 +214,12 @@ void ParticleFilter::updateWeights(	double sensor_range, double std_landmark[],
 				current_weight *= MultiVariateGaussianProbability(xo, yo, xr, yr, std_landmark[0], std_landmark[1]);
 			}
 
-			DebugPrint("updateWeights: Save current weight.");
 			this->weights[ii] = current_weight;
-			DebugPrint("updateWeights: Save current weight. Done");
-
 	    }
 	    else{
 	    	// No weight update
 	    }
-
-		DebugPrint("updateWeights: Loop on particles - End iteration.");
 	}
-
-
-	// Normalize to weights
-
 
 	DebugPrint("updateWeights: Leaving.");
 }
