@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <iostream>
 #include <numeric>
-#include <math.h> 
+#include <math.h>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -31,7 +31,7 @@ void DebugPrint(const char* message)
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	DebugPrint("init: Entering.");
 	// Set the number of particles. Initialize all particles to first position (based on estimates of
-	//   x, y, theta and their uncertainties from GPS) and all weights to 1. 
+	//   x, y, theta and their uncertainties from GPS) and all weights to 1.
 	// Add random Gaussian noise to each particle.
 	default_random_engine gen;
 
@@ -47,6 +47,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	for(int ii = 0; ii < this->num_particles ; ++ii ){
 
 		this->weights[ii] = 1.0;
+		this->particles[ii].weight = 1.0;
 
 		this->particles[ii].x = dist_x( gen );
 		this->particles[ii].y = dist_y( gen );
@@ -73,7 +74,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	for(int ii = 0; ii < this->num_particles ; ++ii ){
 
 		// Apply the state update to the particle (the formula depends on the yaw_rate being 0 or not)
-		if(  yaw_rate < 1e-5 ){
+		if( fabs(yaw_rate) < 1e-4 ){
 			this->particles[ii].x += velocity * delta_t * cos( this->particles[ii].theta );
 			this->particles[ii].y += velocity * delta_t * sin( this->particles[ii].theta );
 		}
@@ -100,7 +101,7 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predictions, std::
 	DebugPrint("dataAssociation: Entering.");
 	// Find the predicted measurement that is closest to each observed measurement and assign the
 	//   observed measurement to this particular landmark.
-	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to 
+	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to
 	//   implement this method and use it as a helper during the updateWeights phase.
 
 	//	predictions <- landmarks_within_sensor_range
@@ -151,7 +152,7 @@ void ParticleFilter::updateWeights(	double sensor_range, double std_landmark[],
 	//   Keep in mind that this transformation requires both rotation AND translation (but no scaling).
 	//   The following is a good resource for the theory:
 	//   https://www.willamette.edu/~gorr/classes/GeneralGraphics/Transforms/transforms2d.htm
-	//   and the following is a good resource for the actual equation to implement (look at equation 
+	//   and the following is a good resource for the actual equation to implement (look at equation
 	//   3.33
 	//   http://planning.cs.uiuc.edu/node99.html
 
@@ -215,6 +216,7 @@ void ParticleFilter::updateWeights(	double sensor_range, double std_landmark[],
 			}
 
 			this->weights[ii] = current_weight;
+			this->particles[ii].weight = current_weight;
 	    }
 	    else{
 	    	// No weight update
@@ -227,7 +229,7 @@ void ParticleFilter::updateWeights(	double sensor_range, double std_landmark[],
 void ParticleFilter::resample()
 {
 	DebugPrint("resample: Entering.");
-	// TODO: Resample particles with replacement with probability proportional to their weight. 
+	// TODO: Resample particles with replacement with probability proportional to their weight.
 	// NOTE: You may find std::discrete_distribution helpful here.
 	//   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
 
