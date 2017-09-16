@@ -17,7 +17,7 @@
 
 #include "particle_filter.h"
 
-#define DEBUGGING (1)
+#define DEBUGGING (0)
 
 using namespace std;
 
@@ -35,8 +35,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	// Add random Gaussian noise to each particle.
 	default_random_engine gen;
 
-	this->num_particles = 4;
-	this->is_initialized = true;
+	this->num_particles = 100;
 	this->weights.resize( this->num_particles, 1.0 );
 	this->particles.resize( this->num_particles );
 
@@ -54,6 +53,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 		this->particles[ii].theta = dist_theta( gen );
 
 	}
+	this->is_initialized = true;
 
 	DebugPrint("init: Leaving.");
 }
@@ -71,8 +71,6 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	normal_distribution<double> dist_theta( 0.0, std_pos[2] );
 
 	for(int ii = 0; ii < this->num_particles ; ++ii ){
-
-		double x_0 = this->particles[ii].x;
 
 		// Apply the state update to the particle (the formula depends on the yaw_rate being 0 or not)
 		if(  yaw_rate < 1e-5 ){
@@ -164,14 +162,14 @@ void ParticleFilter::updateWeights(	double sensor_range, double std_landmark[],
 
 	// For each particle (the "candidate" in each iteration)
 	for( int ii = 0; ii < this->num_particles; ++ii ){
-		std::cout  << "ii " << ii << std::endl;
+//		std::cout  << "ii " << ii << std::endl;
 		DebugPrint("updateWeights: Start particle cycle.");
 
 		// Clear vector if used in previous cycles.
 	    if(landmarks_within_sensor_range.size() > 0){
-	    	std::cout << "Clear vector of size " << landmarks_within_sensor_range.size() << std::endl;
+//	    	std::cout << "Clear vector of size " << landmarks_within_sensor_range.size() << std::endl;
 	    	landmarks_within_sensor_range.clear();
-	    	std::cout << "Cleared vector, now of size " << landmarks_within_sensor_range.size() << std::endl;
+//	    	std::cout << "Cleared vector, now of size " << landmarks_within_sensor_range.size() << std::endl;
 	    }
 
 		double xp = particles[ii].x;
@@ -180,7 +178,7 @@ void ParticleFilter::updateWeights(	double sensor_range, double std_landmark[],
 		// Generate predicted landmark observations (convert each observation to map coordinates)
 
 		for( int il = 0 ; il < observations.size() ; ++il){
-			observations_in_map_coordinates[ii] = this->convertObservationToMapCoordinates( particles[ii], observations[il] );
+			observations_in_map_coordinates[il] = this->convertObservationToMapCoordinates( particles[ii], observations[il] );
 		}
 
 		// Limit the landmarks to be used to those in the range of the sensor from the candidate particle position.
@@ -196,9 +194,9 @@ void ParticleFilter::updateWeights(	double sensor_range, double std_landmark[],
 				obs.y = ym;
 				obs.id = map_landmarks.landmark_list[ilm].id_i;
 				DebugPrint("updateWeights: New landmarks_within_sensor_range.");
-				std::cout  << " ilm " << ilm << " x " << obs.x << " y " << obs.y << " id " << obs.id << " size_vector " << landmarks_within_sensor_range.size() << std::endl;
+//				std::cout  << " ilm " << ilm << " x " << obs.x << " y " << obs.y << " id " << obs.id << " size_vector " << landmarks_within_sensor_range.size() << std::endl;
 				landmarks_within_sensor_range.push_back(obs);
-				std::cout  << "updateWeights: New landmarks_within_sensor_range. Done" << std::endl;
+//				std::cout  << "updateWeights: New landmarks_within_sensor_range. Done" << std::endl;
 			}
 	    }
 
